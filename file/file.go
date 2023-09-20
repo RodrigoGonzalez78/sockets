@@ -2,42 +2,88 @@ package file
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
+	"time"
+
+	"github.com/RodrigoGonzalez78/sockets/models"
 )
 
-func File() {
-	// Abrir un archivo para escritura
-	file, err := os.Create("datos.csv")
+func CrearArchivoCSV(ruta string) error {
+	// Verificar si el archivo ya existe
+	_, err := os.Stat(ruta)
+	if err == nil {
+		// El archivo ya existe, no es necesario crearlo
+		fmt.Println("El archivo CSV ya existe en la ruta especificada.")
+		return nil
+	}
+
+	// Si os.IsNotExist devuelve true, entonces el archivo no existe y lo creamos
+	if os.IsNotExist(err) {
+		file, err := os.Create(ruta)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		fmt.Println("Archivo CSV creado en la ruta especificada.")
+		return nil
+	}
+
+	// Otro error, retornamos el error
+	return err
+}
+
+func EscribirDatosEnCSV(ruta string, mensaje models.Mensaje) error {
+	file, err := os.OpenFile(ruta, os.O_WRONLY|os.O_APPEND, os.ModeAppend)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
 
-	// Crear un escritor CSV
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	// Datos que queremos escribir en el archivo CSV
-	data := [][]string{
-		{"Nombre", "Edad", "Ciudad"},
-		{"Alice", "30", "Nueva York"},
-		{"Bob", "35", "Los Ángeles"},
-		{"Charlie", "25", "Chicago"},
+	if err := writer.Write(mensaje.ConvertirAString()); err != nil {
+		return err
 	}
 
-	// Escribir los datos en el archivo CSV
-	for _, record := range data {
-		if err := writer.Write(record); err != nil {
-			panic(err)
+	return nil
+}
+
+func LeerDatosDeCSV(ruta string) ([]models.Mensaje, error) {
+	file, err := os.Open(ruta)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	var mensajes []models.Mensaje
+
+	for _, record := range records {
+		if len(record) >= 3 {
+
+			// Parsear la fecha y hora
+			fechaHora, err := time.Parse(time.RFC3339, record[2])
+			if err != nil {
+				return nil, err
+			}
+
+			// Crear un nuevo mensaje
+			mensaje := models.Mensaje{
+				Mensaje:       record[0],
+				NombreCliente: record[1],
+				FechaHora:     fechaHora,
+			}
+
+			mensajes = append(mensajes, mensaje)
 		}
 	}
 
-	// Flush para asegurarse de que todos los datos estén escritos en el archivo
-	writer.Flush()
-
-	if err := writer.Error(); err != nil {
-		panic(err)
-	}
-
-	println("Datos escritos en datos.csv")
+	return mensajes, nil
 }
