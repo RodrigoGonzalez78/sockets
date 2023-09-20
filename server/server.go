@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/RodrigoGonzalez78/sockets/models"
+	"github.com/RodrigoGonzalez78/sockets_messages/models"
 )
 
 var clients []models.Client

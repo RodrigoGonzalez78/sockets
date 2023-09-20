@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/RodrigoGonzalez78/sockets/models"
+	"github.com/RodrigoGonzalez78/sockets_messages/models"
 )
 
 func CrearArchivoCSV(ruta string) error {

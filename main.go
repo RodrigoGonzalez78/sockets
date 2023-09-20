@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/RodrigoGonzalez78/sockets/client"
-	"github.com/RodrigoGonzalez78/sockets/file_manager"
-	"github.com/RodrigoGonzalez78/sockets/server"
+	"github.com/RodrigoGonzalez78/sockets_messages/client"
+	"github.com/RodrigoGonzalez78/sockets_messages/file_manager"
+	"github.com/RodrigoGonzalez78/sockets_messages/server"
 )
 
 func main() {
