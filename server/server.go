@@ -9,15 +9,12 @@ import (
 	"github.com/RodrigoGonzalez78/sockets/models"
 )
 
-type Client struct {
-	Connection net.Conn
-}
-
-var clients []Client
+var clients []models.Client
 
 func StartServer(direccion string) {
 
 	ln, err := net.Listen("tcp", direccion)
+
 	if err != nil {
 		fmt.Println("Error al crear el servidor:", err)
 		return
@@ -34,7 +31,7 @@ func StartServer(direccion string) {
 			continue
 		}
 
-		client := Client{
+		client := models.Client{
 			Connection: conn,
 		}
 
@@ -64,16 +61,19 @@ func handleConnection(conn net.Conn) {
 			return
 		}
 
-		fmt.Printf("\n## %s : %s  %v:%v ## \n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora.Hour(), mensaje.FechaHora.Minute())
+		fmt.Printf("\n## %s : %s  %v:%v ##\n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora.Hour(), mensaje.FechaHora.Minute())
 
-		// Enviar una respuesta a todos los clientes
-		broadcastMessage(mensaje)
+		// Enviar el mensaje a todos los clientes
+		broadcastMessage(mensaje, conn.RemoteAddr())
 	}
 }
 
-func broadcastMessage(mensaje models.Mensaje) {
-	for _, client := range clients {
+func broadcastMessage(mensaje models.Mensaje, direccion net.Addr) {
 
-		json.NewEncoder(client.Connection).Encode(mensaje)
+	for _, client := range clients {
+		if client.Connection.RemoteAddr() != direccion {
+			json.NewEncoder(client.Connection).Encode(mensaje)
+		}
+
 	}
 }

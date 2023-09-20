@@ -13,7 +13,10 @@ import (
 )
 
 func StartClient(direccion, nombreCliente string) {
+
+	//Inicio una nueva conexion al servidor
 	conn, err := net.Dial("tcp", direccion)
+
 	if err != nil {
 		fmt.Println("Error al conectar al servidor con la direccion:", direccion, err)
 		return
@@ -32,6 +35,7 @@ func StartClient(direccion, nombreCliente string) {
 	go func() {
 		for {
 			var mensaje models.Mensaje
+
 			err := json.NewDecoder(conn).Decode(&mensaje)
 
 			if err != nil {
@@ -39,7 +43,7 @@ func StartClient(direccion, nombreCliente string) {
 				return
 			}
 
-			fmt.Printf("\n ## %s : %s  %v:%v## \n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora.Hour(), mensaje.FechaHora.Minute())
+			fmt.Printf("\n## %s : %s  %v:%v##\n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora.Hour(), mensaje.FechaHora.Minute())
 		}
 	}()
 
@@ -63,10 +67,12 @@ func StartClient(direccion, nombreCliente string) {
 
 		// Enviar el mensaje al servidor
 		_, err = writer.Write(jsonData)
+
 		if err != nil {
 			fmt.Println("Error al enviar mensaje al servidor:", err)
 			return
 		}
+
 		writer.WriteString("\n") // Agregar una nueva línea para indicar el fin del mensaje
 		writer.Flush()
 	}

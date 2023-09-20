@@ -7,11 +7,13 @@ import (
 	"strings"
 
 	"github.com/RodrigoGonzalez78/sockets/client"
+	"github.com/RodrigoGonzalez78/sockets/file_manager"
 	"github.com/RodrigoGonzalez78/sockets/server"
 )
 
 func main() {
 
+	file_manager.CrearArchivoCSV("/logs.cvs")
 	ip := "127.0.0.1"
 	puerto := "8080"
 	direccion := ip + ":" + puerto

@@ -1,4 +1,4 @@
-package file
+package file_manager
 
 import (
 	"encoding/csv"
@@ -12,6 +12,7 @@ import (
 func CrearArchivoCSV(ruta string) error {
 	// Verificar si el archivo ya existe
 	_, err := os.Stat(ruta)
+
 	if err == nil {
 		// El archivo ya existe, no es necesario crearlo
 		fmt.Println("El archivo CSV ya existe en la ruta especificada.")
@@ -33,7 +34,8 @@ func CrearArchivoCSV(ruta string) error {
 	return err
 }
 
-func EscribirDatosEnCSV(ruta string, mensaje models.Mensaje) error {
+func EscribirDatosEnCSV(ruta string, informacion []string) error {
+
 	file, err := os.OpenFile(ruta, os.O_WRONLY|os.O_APPEND, os.ModeAppend)
 	if err != nil {
 		return err
@@ -43,7 +45,7 @@ func EscribirDatosEnCSV(ruta string, mensaje models.Mensaje) error {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	if err := writer.Write(mensaje.ConvertirAString()); err != nil {
+	if err := writer.Write(informacion); err != nil {
 		return err
 	}
 
