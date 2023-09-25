@@ -40,6 +40,11 @@ func StartClient(direccion, nombreCliente string) {
 			err := json.NewDecoder(conn).Decode(&mensaje)
 
 			if err != nil {
+
+				//Un error de entrada/salida significa que se cerro la conexion
+				if err.Error() == "EOF" {
+					os.Exit(0)
+				}
 				fmt.Println("Error al leer el mensaje del servidor:", err)
 				return
 			}
@@ -71,7 +76,6 @@ func StartClient(direccion, nombreCliente string) {
 
 		if err != nil {
 			fmt.Println("Error al enviar mensaje al servidor:", err)
-			os.Exit(0)
 			return
 		}
 

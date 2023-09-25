@@ -72,7 +72,7 @@ func cargarDireccion(reader *bufio.Reader) (string, error) {
 		return "", err
 	}
 	ip = strings.TrimSpace(ip)
-	fmt.Print("Ingresa el puerto para el cliente: ")
+	fmt.Print("Ingresa el puerto: ")
 	puerto, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error al leer la entrada:", err)
