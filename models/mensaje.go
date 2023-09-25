@@ -1,13 +1,11 @@
 package models
 
-import "time"
-
 type Mensaje struct {
 	NombreCliente string
 	Mensaje       string
-	FechaHora     time.Time
+	FechaHora     string
 }
 
 func (m Mensaje) ConvertirAString() []string {
-	return []string{m.Mensaje, m.NombreCliente, m.FechaHora.String()}
+	return []string{m.NombreCliente, m.Mensaje, m.FechaHora}
 }

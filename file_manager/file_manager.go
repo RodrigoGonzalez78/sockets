@@ -4,9 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"time"
-
-	"github.com/RodrigoGonzalez78/sockets_messages/models"
 )
 
 func CrearArchivoCSV(ruta string) error {
@@ -50,42 +47,4 @@ func EscribirDatosEnCSV(ruta string, informacion []string) error {
 	}
 
 	return nil
-}
-
-func LeerDatosDeCSV(ruta string) ([]models.Mensaje, error) {
-	file, err := os.Open(ruta)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var mensajes []models.Mensaje
-
-	for _, record := range records {
-		if len(record) >= 3 {
-
-			// Parsear la fecha y hora
-			fechaHora, err := time.Parse(time.RFC3339, record[2])
-			if err != nil {
-				return nil, err
-			}
-
-			// Crear un nuevo mensaje
-			mensaje := models.Mensaje{
-				Mensaje:       record[0],
-				NombreCliente: record[1],
-				FechaHora:     fechaHora,
-			}
-
-			mensajes = append(mensajes, mensaje)
-		}
-	}
-
-	return mensajes, nil
 }

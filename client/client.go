@@ -21,6 +21,7 @@ func StartClient(direccion, nombreCliente string) {
 		fmt.Println("Error al conectar al servidor con la direccion:", direccion, err)
 		return
 	}
+
 	defer conn.Close()
 
 	fmt.Println("Conexión establecida. Puedes empezar a enviar mensajes.")
@@ -43,7 +44,7 @@ func StartClient(direccion, nombreCliente string) {
 				return
 			}
 
-			fmt.Printf("\n## %s : %s  %v:%v##\n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora.Hour(), mensaje.FechaHora.Minute())
+			fmt.Printf("\n## %s : %s  %v##\n", mensaje.NombreCliente, mensaje.Mensaje, mensaje.FechaHora)
 		}
 	}()
 
@@ -55,7 +56,7 @@ func StartClient(direccion, nombreCliente string) {
 		mensaje := models.Mensaje{
 			NombreCliente: nombreCliente,
 			Mensaje:       strings.TrimSpace(textoMensaje),
-			FechaHora:     time.Now(),
+			FechaHora:     time.Now().Format("15:04"),
 		}
 
 		// Convertir el mensaje a JSON
@@ -70,10 +71,11 @@ func StartClient(direccion, nombreCliente string) {
 
 		if err != nil {
 			fmt.Println("Error al enviar mensaje al servidor:", err)
+			os.Exit(0)
 			return
 		}
 
-		writer.WriteString("\n") // Agregar una nueva línea para indicar el fin del mensaje
+		writer.WriteString("\n")
 		writer.Flush()
 	}
 }

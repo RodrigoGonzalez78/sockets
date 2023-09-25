@@ -1,13 +1,16 @@
 package models
 
-import "time"
+import (
+	"net"
+	"time"
+)
 
 type Log struct {
-	Direccion string
+	Direccion net.Addr
 	Fecha     time.Time
 	Operacion string
 }
 
 func (l Log) ConvertirAString() []string {
-	return []string{l.Direccion, l.Fecha.String(), l.Operacion}
+	return []string{l.Direccion.String(), l.Operacion, l.Fecha.String()}
 }
