@@ -33,6 +33,7 @@ func StartServer(direccion string) {
 
 		if err != nil {
 			fmt.Println("Error al aceptar la conexión:", err)
+			saveLog("Error al aceptar la conexión: "+err.Error(), conn)
 			continue
 		}
 
@@ -51,12 +52,7 @@ func handleConnection(conn net.Conn) {
 
 	fmt.Println("Nueva conexión establecida con el host:", conn.RemoteAddr())
 
-	newLog := models.Log{
-		Direccion: conn.RemoteAddr(),
-		Fecha:     time.Now(),
-		Operacion: "Nueva Conexion",
-	}
-	file_manager.EscribirDatosEnCSV(LogsFile, newLog.ConvertirAString())
+	saveLog("Nueva Conexion", conn)
 
 	reader := bufio.NewReader(conn)
 
@@ -67,6 +63,8 @@ func handleConnection(conn net.Conn) {
 
 		if err != nil {
 			fmt.Println("Error al leer el mensaje del cliente:", err)
+			saveLog("Error al leer el mensaje del cliente:"+err.Error(), conn)
+			removeClient(conn)
 			return
 		}
 
@@ -84,6 +82,7 @@ func handleConnection(conn net.Conn) {
 }
 
 func sendConnectedClientsList(conn net.Conn) {
+
 	clientesString := "Clientes conectados:\n"
 	for _, client := range clients {
 		clientesString += "- " + client.Connection.RemoteAddr().String() + "\n"
@@ -95,6 +94,32 @@ func sendConnectedClientsList(conn net.Conn) {
 		FechaHora:     time.Now().Format("15:04"),
 	}
 	json.NewEncoder(conn).Encode(listaClientes)
+
+}
+
+func removeClient(conn net.Conn) {
+	// Encuentra y elimina al cliente de la lista de clientes
+	for i, client := range clients {
+		if client.Connection.RemoteAddr() == conn.RemoteAddr() {
+			// Elimina al cliente de la lista
+			clients = append(clients[:i], clients[i+1:]...)
+			fmt.Println("Cliente desconectado: ", conn.RemoteAddr())
+			break
+		}
+	}
+
+	saveLog("Cliente desconectado", conn)
+
+}
+
+func saveLog(log string, conn net.Conn) {
+	newLog := models.Log{
+		Direccion: conn.RemoteAddr(),
+		Fecha:     time.Now(),
+		Operacion: log,
+	}
+
+	file_manager.EscribirDatosEnCSV(LogsFile, newLog.ConvertirAString())
 }
 
 func sendDisconnectMessage(conn net.Conn) {
@@ -104,6 +129,7 @@ func sendDisconnectMessage(conn net.Conn) {
 		FechaHora:     time.Now().Format("15:04"),
 	}
 	json.NewEncoder(conn).Encode(cerrarConexion)
+	removeClient(conn)
 	conn.Close()
 }
 
