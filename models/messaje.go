@@ -1,7 +1,7 @@
 package models
 
 // Contenido del mensaje con la ip destino/origen
-type Messaje struct {
+type Message struct {
 	IP      string
 	Contend string
 }

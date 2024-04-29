@@ -27,6 +27,7 @@ func StartServer(address string) {
 
 	for {
 		conn, err := ln.Accept()
+
 		if err != nil {
 			fmt.Println("Error al aceptar la conexión:", err)
 			continue
@@ -38,11 +39,12 @@ func StartServer(address string) {
 
 		clients[conn.RemoteAddr().String()] = client
 
-		go handleConnection(conn)
+		go HandleConnection(conn)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+// Se encarga de manejar cada conexion
+func HandleConnection(conn net.Conn) {
 
 	defer conn.Close()
 
@@ -66,30 +68,8 @@ func handleConnection(conn net.Conn) {
 		} else if transmition.Operation == "disconect" {
 			removeClient(conn)
 		} else if transmition.Operation == "get_clients_list" {
-
+			sendConnectedIPs(conn)
 		}
 
 	}
-}
-
-func removeClient(conn net.Conn) {
-
-	delete(clients, conn.RemoteAddr().String())
-	fmt.Println("Cliente desconectado:", conn.RemoteAddr())
-
-}
-
-func sendMessageToClient(transmition models.Transmition, sender net.Conn) {
-
-	client, ok := clients[transmition.Messaje.IP]
-
-	if !ok {
-		fmt.Println("El cliente destino no está conectado:", transmition.Messaje.IP)
-		return
-	}
-
-	transmition.Messaje.IP = sender.RemoteAddr().String()
-	transmition.Operation = "receive_message"
-
-	json.NewEncoder(client.Connection).Encode(transmition.Messaje.IP)
 }
