@@ -2,8 +2,8 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
+	"time"
 
 	"github.com/RodrigoGonzalez78/sockets_messages/models"
 )
@@ -11,14 +11,22 @@ import (
 func sendMessageToClient(transmition models.Transmition, sender net.Conn) {
 
 	client, ok := clients[transmition.Messaje.IP]
+	transmition.Time = time.Now().Format("15:04")
 
 	if !ok {
-		fmt.Println("El cliente destino no está conectado:", transmition.Messaje.IP)
+
+		transmition.Operation = "error_message"
+		transmition.Messaje.Contend = "Error el user " + transmition.Messaje.IP + " no esta disponible."
+		json.NewEncoder(sender).Encode(transmition)
 		return
 	}
 
-	transmition.Messaje.IP = sender.RemoteAddr().String()
-	transmition.Operation = "receive_message"
+	transmition.Operation = "destination_receive_message"
 
-	json.NewEncoder(client.Connection).Encode(transmition.Messaje.IP)
+	json.NewEncoder(sender).Encode(transmition)
+
+	transmition.Operation = "new_message_received"
+	transmition.Messaje.IP = sender.RemoteAddr().String()
+
+	json.NewEncoder(client.Connection).Encode(transmition)
 }

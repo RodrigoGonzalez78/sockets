@@ -9,7 +9,9 @@ import (
 )
 
 func sendConnectedIPs(conn net.Conn) {
+
 	var connectedIPs []string
+
 	for addr := range clients {
 		connectedIPs = append(connectedIPs, addr)
 	}
@@ -17,6 +19,8 @@ func sendConnectedIPs(conn net.Conn) {
 	transmition := models.Transmition{
 		Operation: "get_clients_list",
 		Time:      time.Now().Format("15:04"),
+		Client:    connectedIPs,
 	}
+
 	json.NewEncoder(conn).Encode(transmition)
 }

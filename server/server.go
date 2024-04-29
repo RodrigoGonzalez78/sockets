@@ -58,6 +58,7 @@ func HandleConnection(conn net.Conn) {
 		err := json.NewDecoder(reader).Decode(&transmition)
 
 		if err != nil {
+
 			fmt.Println("Error al leer el mensaje del cliente:", err)
 			removeClient(conn)
 			return
@@ -65,8 +66,10 @@ func HandleConnection(conn net.Conn) {
 
 		if transmition.Operation == "send_message" {
 			sendMessageToClient(transmition, conn)
+
 		} else if transmition.Operation == "disconect" {
 			removeClient(conn)
+
 		} else if transmition.Operation == "get_clients_list" {
 			sendConnectedIPs(conn)
 		}
