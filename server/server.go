@@ -5,17 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/RodrigoGonzalez78/sockets_messages/models"
 )
 
-var clients map[string]models.Client
+var clients []models.Client
 
-func StartServer(address string) {
+func StartServer(direccion string) {
 
-	clients = make(map[string]models.Client)
-
-	ln, err := net.Listen("tcp", address)
+	ln, err := net.Listen("tcp", direccion)
 
 	if err != nil {
 		fmt.Println("Error al crear el servidor:", err)
@@ -23,13 +22,15 @@ func StartServer(address string) {
 	}
 	defer ln.Close()
 
-	fmt.Println("Servidor escuchando en la dirección:", address)
+	fmt.Println("Servidor escuchando en la dirección:", direccion)
 
 	for {
+
 		conn, err := ln.Accept()
 
 		if err != nil {
 			fmt.Println("Error al aceptar la conexión:", err)
+
 			continue
 		}
 
@@ -37,15 +38,13 @@ func StartServer(address string) {
 			Connection: conn,
 		}
 
-		clients[conn.RemoteAddr().String()] = client
+		clients = append(clients, client)
 
-		go HandleConnection(conn)
+		go handleConnection(conn)
 	}
 }
 
-// Se encarga de manejar cada conexion
-func HandleConnection(conn net.Conn) {
-
+func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	fmt.Println("Nueva conexión establecida con el host:", conn.RemoteAddr())
@@ -53,25 +52,75 @@ func HandleConnection(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 
 	for {
-		var transmition models.Transmition
+		var mensaje models.Mensaje
 
-		err := json.NewDecoder(reader).Decode(&transmition)
+		err := json.NewDecoder(reader).Decode(&mensaje)
 
 		if err != nil {
-
 			fmt.Println("Error al leer el mensaje del cliente:", err)
+
 			removeClient(conn)
 			return
 		}
 
-		if transmition.Operation == "send_message" {
-			sendMessageToClient(transmition, conn)
+		fmt.Printf("\n## %s : %s %v ##\n", mensaje.ClientName, mensaje.Message, mensaje.Time)
 
-		} else if transmition.Operation == "disconect" {
-			removeClient(conn)
+		if mensaje.Message == "/listar" {
+			sendConnectedClientsList(conn)
+		} else if mensaje.Message == "/quitar" {
+			sendDisconnectMessage(conn)
+			return
+		} else {
+			broadcastMessage(mensaje, conn.RemoteAddr())
+		}
+	}
+}
 
-		} else if transmition.Operation == "get_clients_list" {
-			sendConnectedIPs(conn)
+func sendConnectedClientsList(conn net.Conn) {
+
+	clientesString := "Clientes conectados:\n"
+	for _, client := range clients {
+		clientesString += "- " + client.Connection.RemoteAddr().String() + "\n"
+	}
+
+	listaClientes := models.Mensaje{
+		ClientName: "Servidor",
+		Message:    clientesString,
+		Time:       time.Now().Format("15:04"),
+	}
+	json.NewEncoder(conn).Encode(listaClientes)
+
+}
+
+func removeClient(conn net.Conn) {
+	// Encuentra y elimina al cliente de la lista de clientes
+	for i, client := range clients {
+		if client.Connection.RemoteAddr() == conn.RemoteAddr() {
+			// Elimina al cliente de la lista
+			clients = append(clients[:i], clients[i+1:]...)
+			fmt.Println("Cliente desconectado: ", conn.RemoteAddr())
+			break
+		}
+	}
+
+}
+
+func sendDisconnectMessage(conn net.Conn) {
+	cerrarConexion := models.Mensaje{
+		ClientName: "Servidor",
+		Message:    "Tu sesión se ha cerrado.",
+		Time:       time.Now().Format("15:04"),
+	}
+	json.NewEncoder(conn).Encode(cerrarConexion)
+	removeClient(conn)
+	conn.Close()
+}
+
+func broadcastMessage(mensaje models.Mensaje, direccion net.Addr) {
+
+	for _, client := range clients {
+		if client.Connection.RemoteAddr() != direccion {
+			json.NewEncoder(client.Connection).Encode(mensaje)
 		}
 
 	}
