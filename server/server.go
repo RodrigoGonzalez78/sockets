@@ -52,7 +52,7 @@ func handleConnection(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 
 	for {
-		var mensaje models.Mensaje
+		var mensaje models.Message
 
 		err := json.NewDecoder(reader).Decode(&mensaje)
 
@@ -83,7 +83,7 @@ func sendConnectedClientsList(conn net.Conn) {
 		clientesString += "- " + client.Connection.RemoteAddr().String() + "\n"
 	}
 
-	listaClientes := models.Mensaje{
+	listaClientes := models.Message{
 		ClientName: "Servidor",
 		Message:    clientesString,
 		Time:       time.Now().Format("15:04"),
@@ -95,6 +95,7 @@ func sendConnectedClientsList(conn net.Conn) {
 func removeClient(conn net.Conn) {
 	// Encuentra y elimina al cliente de la lista de clientes
 	for i, client := range clients {
+
 		if client.Connection.RemoteAddr() == conn.RemoteAddr() {
 			// Elimina al cliente de la lista
 			clients = append(clients[:i], clients[i+1:]...)
@@ -106,21 +107,24 @@ func removeClient(conn net.Conn) {
 }
 
 func sendDisconnectMessage(conn net.Conn) {
-	cerrarConexion := models.Mensaje{
+	closeConexion := models.Message{
 		ClientName: "Servidor",
 		Message:    "Tu sesión se ha cerrado.",
 		Time:       time.Now().Format("15:04"),
 	}
-	json.NewEncoder(conn).Encode(cerrarConexion)
+	json.NewEncoder(conn).Encode(closeConexion)
 	removeClient(conn)
 	conn.Close()
 }
 
-func broadcastMessage(mensaje models.Mensaje, direccion net.Addr) {
+func broadcastMessage(message models.Message, direction net.Addr) {
 
 	for _, client := range clients {
-		if client.Connection.RemoteAddr() != direccion {
-			json.NewEncoder(client.Connection).Encode(mensaje)
+		if client.Connection.RemoteAddr() != direction {
+
+			message.Time = time.Now().Format("15:04")
+
+			json.NewEncoder(client.Connection).Encode(message)
 		}
 
 	}

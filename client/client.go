@@ -35,7 +35,7 @@ func StartClient(direccion, nombreCliente string) {
 	// Crear una goroutine para recibir mensajes y mostrarlos en la consola
 	go func() {
 		for {
-			var mensaje models.Mensaje
+			var mensaje models.Message
 
 			err := json.NewDecoder(conn).Decode(&mensaje)
 
@@ -58,7 +58,7 @@ func StartClient(direccion, nombreCliente string) {
 		textoMensaje, _ := reader.ReadString('\n')
 
 		// Crear un mensaje
-		mensaje := models.Mensaje{
+		mensaje := models.Message{
 			ClientName: nombreCliente,
 			Message:    strings.TrimSpace(textoMensaje),
 			Time:       time.Now().Format("15:04"),
