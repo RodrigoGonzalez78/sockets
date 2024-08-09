@@ -7,6 +7,4 @@ Funciones que contiene:
 
 2-Servicio Servidor
 
-3-Almacenamiento de logs de nuevas coexiones
 
-4-Comados /listar (lista ip de los clientes) /quitar (cierra la conexion del cliente)
